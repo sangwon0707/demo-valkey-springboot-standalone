@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  demo-valkey-primary:
+    image: docker.io/bitnami/valkey:7.2
+    ports:
+      - '6378:6379'
+    environment:
+      - VALKEY_REPLICATION_MODE=master
+      - VALKEY_PASSWORD=root
+      - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+    volumes:
+      - 'sticky_volume_demo-valkey-primary:/bitnami/valkey/data'
+
+  demo-valkey-secondary:
+    image: docker.io/bitnami/valkey:7.2
+    ports:
+      - '6379:6379'
+    depends_on:
+      - demo-valkey-primary
+    environment:
+      - VALKEY_REPLICATION_MODE=slave
+      - VALKEY_MASTER_HOST=demo-valkey-primary
+      - VALKEY_MASTER_PORT_NUMBER=6379
+      - VALKEY_MASTER_PASSWORD=root
+      - VALKEY_PASSWORD=root
+      - VALKEY_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+
+volumes:
+  sticky_volume_demo-valkey-primary:
+    driver: local

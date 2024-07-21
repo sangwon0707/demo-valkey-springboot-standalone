@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EmailOtpRepository extends CrudRepository<EmailOtp, String> {
     EmailOtp findByRefreshToken(String refreshToken);
+    EmailOtp findByEmail(String email);
+    EmailOtp deleteByEmail(String id);
 }

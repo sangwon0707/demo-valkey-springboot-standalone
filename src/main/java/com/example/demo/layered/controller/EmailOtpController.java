@@ -26,8 +26,8 @@ public class EmailOtpController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteOtp(@PathVariable String id) {
-        service.delete(id);
+    public EmailOtp deleteOtp(@PathVariable String id) {
+        return service.delete(id);
     }
 
     @PostMapping("/refresh")

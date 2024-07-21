@@ -26,7 +26,12 @@ public class EmailOtpService implements EmailOtpCreateUseCase, EmailOtpDeleteUse
 
     @Override
     public EmailOtp read(String id) {
-        return repository.findById(id).orElse(null);
+//        return repository.findById(id).orElse(null);
+        EmailOtp emailOtp = repository.findById(id).orElse(null);
+        if (emailOtp == null) {
+            emailOtp = repository.findByEmail(id);
+        }
+        return emailOtp;
     }
 
     @Override
@@ -35,9 +40,19 @@ public class EmailOtpService implements EmailOtpCreateUseCase, EmailOtpDeleteUse
         if (emailOtp != null) {
             repository.deleteById(id);
             return mapper.copy(emailOtp); // Using mapper to create a copy
+        }else {
+            emailOtp = repository.findByEmail(id);
+            if (emailOtp != null) {
+                repository.deleteByEmail(id);
+                System.out.println(mapper.copy(emailOtp));
+                return mapper.copy(emailOtp);
+            } else {
+                return null;
+            }
         }
-        return null;
     }
+
+
 
     public EmailOtp refreshToken(String refreshToken) {
         EmailOtp emailOtp = repository.findByRefreshToken(refreshToken);

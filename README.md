@@ -165,3 +165,110 @@ Body:
 - RESTful API 구현
 - 어노테이션 기반 설정
 
+
+-------------------------------------------------------
+# Update 학습 내용 요약
+
+## 1. DTO (Data Transfer Object) 패턴 도입
+
+DTO를 도입하여 계층 간 데이터 전송을 개선하고 엔티티 직접 노출을 방지했습니다.
+
+```java
+public final class EmailOtpDto {
+    @Builder
+    public record CreateRequest(String email, String otp, Integer ttl) {}
+
+    @Builder
+    public record Response(String id, String email, String otp, Integer ttl, String refreshToken) {}
+
+    @Builder
+    public record RefreshRequest(String refreshToken) {}
+}
+```
+
+## 2. MapStruct를 이용한 매퍼 구현
+
+MapStruct를 사용하여 DTO와 엔티티 간 변환을 효율적으로 처리하도록 했습니다.
+
+```java
+@Mapper(componentModel = "spring")
+public interface EmailOtpMapper {
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "refreshToken", ignore = true)
+    EmailOtp toEntity(EmailOtpDto.CreateRequest dto);
+
+    EmailOtpDto.Response toDto(EmailOtp entity);
+}
+```
+
+## 3. 컨트롤러 수정
+
+컨트롤러에서 DTO를 사용하도록 변경하여 API 계층을 개선했습니다.
+
+```java
+@RestController
+@RequestMapping("/otp")
+public class EmailOtpController {
+    @PostMapping
+    public EmailOtpDto.Response createOtp(@RequestBody EmailOtpDto.CreateRequest request) {
+        return service.create(request);
+    }
+
+    @GetMapping("/{id}")
+    public EmailOtpDto.Response getOtp(@PathVariable String id) {
+        return service.read(id);
+    }
+}
+```
+
+## 4. 서비스 계층 리팩토링
+
+서비스 계층에서 DTO를 사용하고 UseCase 인터페이스를 구현하도록 변경했습니다.
+
+```java
+@Service
+public class EmailOtpService implements EmailOtpCreateUseCase, EmailOtpReadUseCase, EmailOtpDeleteUseCase, EmailOtpRefreshUseCase {
+    @Override
+    public EmailOtpDto.Response create(EmailOtpDto.CreateRequest request) {
+        EmailOtp emailOtp = mapper.toEntity(request);
+        // ... (implementation)
+        return mapper.toDto(savedEmailOtp);
+    }
+
+    @Override
+    public EmailOtpDto.Response read(String idOrEmail) {
+        EmailOtp emailOtp = repository.findById(idOrEmail)
+                .orElseGet(() -> repository.findByEmail(idOrEmail));
+        return mapper.toDto(emailOtp);
+    }
+}
+```
+
+## 5. UseCase 인터페이스 도입
+
+각 기능에 대한 UseCase 인터페이스를 생성하여 관심사를 분리하고 코드의 가독성과 유지보수성을 향상시켰습니다.
+
+```java
+public interface EmailOtpCreateUseCase {
+    EmailOtpDto.Response create(EmailOtpDto.CreateRequest request);
+}
+
+public interface EmailOtpReadUseCase {
+    EmailOtpDto.Response read(String idOrEmail);
+}
+
+public interface EmailOtpDeleteUseCase {
+    EmailOtpDto.Response delete(String idOrEmail);
+}
+
+public interface EmailOtpRefreshUseCase {
+    EmailOtpDto.Response refreshToken(String refreshToken);
+}
+```
+
+## 학습 요약
+변경을 통해 프로젝트의 구조를 개선하고 클린 아키텍처 원칙 준수 
+DTO 사용으로 계층 간 데이터 전송이 명확해짐 
+UseCase 인터페이스 도입으로 비즈니스 로직의 의도가 분명하게 함
+MapStruct를 이용한 매핑으로 코드 중복을 줄이고 효율성을 높임.
+

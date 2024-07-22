@@ -1,31 +1,50 @@
+//package com.example.demo.layered.mapper;
+//
+//import com.example.demo.layered.entity.EmailOtp;
+//import org.springframework.stereotype.Component;
+//
+//@Component
+//public class EmailOtpMapper {
+//
+//    public EmailOtp copy(EmailOtp source) {
+//        if (source == null) {
+//            return null;
+//        }
+//
+//        EmailOtp target = new EmailOtp();
+//        target.setId(source.getId());
+//        target.setEmail(source.getEmail());
+//        target.setOtp(source.getOtp());
+//        target.setTtl(source.getTtl());
+//        return target;
+//    }
+//
+//    public void update(EmailOtp target, EmailOtp source) {
+//        if (source == null || target == null) {
+//            return;
+//        }
+//
+//        target.setEmail(source.getEmail());
+//        target.setOtp(source.getOtp());
+//        target.setTtl(source.getTtl());
+//    }
+//}
+
 package com.example.demo.layered.mapper;
 
+import com.example.demo.layered.controller.dto.EmailOtpDto;
 import com.example.demo.layered.entity.EmailOtp;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class EmailOtpMapper {
+@Mapper(componentModel = "spring")
+public interface EmailOtpMapper {
 
-    public EmailOtp copy(EmailOtp source) {
-        if (source == null) {
-            return null;
-        }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "refreshToken", ignore = true)
+    EmailOtp toEntity(EmailOtpDto.CreateRequest dto);
 
-        EmailOtp target = new EmailOtp();
-        target.setId(source.getId());
-        target.setEmail(source.getEmail());
-        target.setOtp(source.getOtp());
-        target.setTtl(source.getTtl());
-        return target;
-    }
+    EmailOtpDto.Response toDto(EmailOtp entity);
 
-    public void update(EmailOtp target, EmailOtp source) {
-        if (source == null || target == null) {
-            return;
-        }
-
-        target.setEmail(source.getEmail());
-        target.setOtp(source.getOtp());
-        target.setTtl(source.getTtl());
-    }
+    EmailOtp copy(EmailOtp source);
 }
